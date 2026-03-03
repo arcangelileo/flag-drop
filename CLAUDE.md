@@ -1,8 +1,9 @@
 # FlagDrop
 
-Phase: SCAFFOLDING
+Phase: DEVELOPMENT
 
 ## Project Spec
+- **Repo**: https://github.com/arcangelileo/flag-drop
 - **Idea**: FlagDrop is a feature flag management platform that lets development teams control feature rollouts without deploying code. Teams create projects, define flags (boolean, string, number, JSON), manage them across environments (dev/staging/production), and evaluate them via a lightweight REST API. A clean dashboard shows flag status, change history, and evaluation analytics. Think LaunchDarkly but simpler, affordable, and self-hostable.
 - **Target users**: Software development teams (startups, indie devs, small-to-mid companies) who want feature flags without the enterprise price tag.
 - **Revenue model**: Freemium — free tier (1 project, 3 environments, 20 flags, 10k evaluations/month), Pro ($19/mo: 10 projects, unlimited flags, 500k evaluations, audit log), Team ($49/mo: unlimited projects, team members, 5M evaluations, webhooks, SSO).
@@ -36,7 +37,7 @@ Phase: SCAFFOLDING
 
 ## Task Backlog
 - [x] Create project directory and CLAUDE.md with spec and backlog
-- [ ] Set up pyproject.toml, src layout, and FastAPI app skeleton with health check
+- [x] Set up pyproject.toml, src layout, and FastAPI app skeleton with health check
 - [ ] Database models (User, Project, Environment, Flag, FlagValue, APIKey, AuditLog, UsageRecord)
 - [ ] Alembic setup and initial migration
 - [ ] Auth system: signup, login, logout, JWT middleware, password hashing
@@ -59,12 +60,44 @@ Phase: SCAFFOLDING
 - Created spec, architecture decisions, and task backlog
 - Rationale: Feature flags are essential for modern dev teams; LaunchDarkly is expensive ($10+/seat); strong demand for simpler/cheaper alternatives; well-scoped for MVP; API-first design maps well to FastAPI
 
+### Session 2 — SCAFFOLDING
+- Created GitHub repo: https://github.com/arcangelileo/flag-drop
+- Set up `pyproject.toml` with all dependencies (FastAPI, SQLAlchemy async, aiosqlite, Alembic, JWT, Pydantic Settings, pytest)
+- Created `src/app/` layout with `api/`, `models/`, `schemas/`, `services/`, `templates/` subdirs
+- Built FastAPI app (`src/app/main.py`) with health check endpoint at `/health`
+- Created `config.py` with Pydantic Settings (env-driven, `FLAGDROP_` prefix)
+- Created `database.py` with async SQLAlchemy engine and session factory
+- Wrote and passed 2 tests (health check + root endpoint) using pytest-asyncio + httpx
+- Phase changed from SCAFFOLDING → DEVELOPMENT
+
 ## Known Issues
-(none yet)
+- No virtualenv available (python3-venv not installed, no sudo access). Dependencies installed via `pip3 install --break-system-packages`. Consider Dockerfile for clean env.
 
 ## Files Structure
 ```
 flag-drop/
-├── CLAUDE.md          # This file
+├── CLAUDE.md                  # Project spec, backlog, progress
+├── .gitignore                 # Python/IDE/DB ignores
+├── pyproject.toml             # Project config, dependencies, tool settings
+├── src/
+│   └── app/
+│       ├── __init__.py
+│       ├── main.py            # FastAPI app entry point
+│       ├── config.py          # Pydantic Settings configuration
+│       ├── database.py        # Async SQLAlchemy engine & session
+│       ├── api/
+│       │   ├── __init__.py
+│       │   └── health.py      # Health check endpoint
+│       ├── models/
+│       │   └── __init__.py
+│       ├── schemas/
+│       │   └── __init__.py
+│       ├── services/
+│       │   └── __init__.py
+│       └── templates/
+│           └── layouts/
+└── tests/
+    ├── __init__.py
+    ├── conftest.py            # Test fixtures (async client)
+    └── test_health.py         # Health check tests
 ```
-(will be updated as files are created)
