@@ -1,0 +1,66 @@
+{% extends "layouts/base.html" %}
+
+{% block body %}
+<!-- Top Navigation -->
+<nav class="bg-white border-b border-gray-200 sticky top-0 z-50 glass bg-white/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <!-- Logo & Nav -->
+            <div class="flex items-center space-x-8">
+                <a href="/dashboard" class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                        </svg>
+                    </div>
+                    <span class="text-xl font-bold text-gray-900">FlagDrop</span>
+                </a>
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/dashboard" class="px-3 py-2 rounded-md text-sm font-medium {% if active_nav == 'dashboard' %}text-brand-600 bg-brand-50{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-100{% endif %} transition-colors">
+                        Dashboard
+                    </a>
+                    {% if current_project %}
+                    <a href="/projects/{{ current_project.id }}/flags" class="px-3 py-2 rounded-md text-sm font-medium {% if active_nav == 'flags' %}text-brand-600 bg-brand-50{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-100{% endif %} transition-colors">
+                        Flags
+                    </a>
+                    <a href="/projects/{{ current_project.id }}/environments" class="px-3 py-2 rounded-md text-sm font-medium {% if active_nav == 'environments' %}text-brand-600 bg-brand-50{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-100{% endif %} transition-colors">
+                        Environments
+                    </a>
+                    <a href="/projects/{{ current_project.id }}/api-keys" class="px-3 py-2 rounded-md text-sm font-medium {% if active_nav == 'api_keys' %}text-brand-600 bg-brand-50{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-100{% endif %} transition-colors">
+                        API Keys
+                    </a>
+                    <a href="/projects/{{ current_project.id }}/audit-log" class="px-3 py-2 rounded-md text-sm font-medium {% if active_nav == 'audit_log' %}text-brand-600 bg-brand-50{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-100{% endif %} transition-colors">
+                        Audit Log
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- User Menu -->
+            <div class="flex items-center space-x-4">
+                {% if user %}
+                <div class="flex items-center space-x-3">
+                    <div class="hidden sm:block text-right">
+                        <p class="text-sm font-medium text-gray-900">{{ user.full_name }}</p>
+                        <p class="text-xs text-gray-500">{{ user.email }}</p>
+                    </div>
+                    <div class="w-9 h-9 bg-brand-100 text-brand-700 rounded-full flex items-center justify-center font-semibold text-sm">
+                        {{ user.full_name[0] | upper }}
+                    </div>
+                    <a href="/logout" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 fade-in">
+    {% block content %}{% endblock %}
+</main>
+{% endblock %}

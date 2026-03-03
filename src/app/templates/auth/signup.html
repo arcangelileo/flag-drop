@@ -1,0 +1,157 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Create Account — FlagDrop{% endblock %}
+
+{% block body %}
+<div class="min-h-full flex">
+    <!-- Left Panel - Branding -->
+    <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <svg class="w-full h-full" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="0.5"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+            </svg>
+        </div>
+        <div class="relative z-10 flex flex-col justify-center px-16">
+            <div class="flex items-center space-x-3 mb-8">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                    </svg>
+                </div>
+                <span class="text-3xl font-bold text-white">FlagDrop</span>
+            </div>
+            <h1 class="text-4xl font-bold text-white mb-4 leading-tight">
+                Start managing<br>feature flags today
+            </h1>
+            <p class="text-lg text-brand-200 max-w-md leading-relaxed">
+                Get started free with 1 project, 20 flags, and 10k evaluations per month. No credit card required.
+            </p>
+            <div class="mt-12 grid grid-cols-2 gap-6">
+                <div class="bg-white/10 rounded-xl p-5 backdrop-blur-sm">
+                    <div class="text-3xl font-bold text-white">Free</div>
+                    <div class="text-sm text-brand-200 mt-1">1 project, 20 flags</div>
+                </div>
+                <div class="bg-white/10 rounded-xl p-5 backdrop-blur-sm">
+                    <div class="text-3xl font-bold text-white">$19<span class="text-lg font-normal">/mo</span></div>
+                    <div class="text-sm text-brand-200 mt-1">Pro: unlimited flags</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel - Signup Form -->
+    <div class="flex-1 flex items-center justify-center px-6 py-12 lg:px-8">
+        <div class="w-full max-w-sm">
+            <!-- Mobile logo -->
+            <div class="lg:hidden flex items-center justify-center space-x-2 mb-8">
+                <div class="w-10 h-10 bg-brand-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                    </svg>
+                </div>
+                <span class="text-2xl font-bold text-gray-900">FlagDrop</span>
+            </div>
+
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">Create your account</h2>
+                <p class="mt-2 text-sm text-gray-600">Start shipping features with confidence</p>
+            </div>
+
+            {% if errors %}
+            <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm fade-in">
+                <div class="flex items-center space-x-2 mb-1">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="font-medium">Please fix the following:</span>
+                </div>
+                <ul class="list-disc list-inside ml-7 space-y-0.5">
+                    {% for error in errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/signup" class="space-y-5">
+                <div>
+                    <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1.5">Full name</label>
+                    <input
+                        type="text"
+                        id="full_name"
+                        name="full_name"
+                        value="{{ full_name | default('', true) }}"
+                        required
+                        autocomplete="name"
+                        class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                        placeholder="Jane Smith"
+                    >
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="{{ email | default('', true) }}"
+                        required
+                        autocomplete="email"
+                        class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                        placeholder="you@company.com"
+                    >
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                        minlength="8"
+                        autocomplete="new-password"
+                        class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                        placeholder="Minimum 8 characters"
+                    >
+                </div>
+
+                <div>
+                    <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1.5">Confirm password</label>
+                    <input
+                        type="password"
+                        id="confirm_password"
+                        name="confirm_password"
+                        required
+                        minlength="8"
+                        autocomplete="new-password"
+                        class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                        placeholder="Re-enter your password"
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-150 active:scale-[0.98]"
+                >
+                    Create account
+                </button>
+            </form>
+
+            <p class="mt-6 text-center text-xs text-gray-500">
+                By creating an account, you agree to our Terms of Service and Privacy Policy.
+            </p>
+
+            <p class="mt-4 text-center text-sm text-gray-500">
+                Already have an account?
+                <a href="/login" class="font-semibold text-brand-600 hover:text-brand-500 transition-colors">Sign in</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Sign In — FlagDrop{% endblock %}
+
+{% block body %}
+<div class="min-h-full flex">
+    <!-- Left Panel - Branding -->
+    <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <svg class="w-full h-full" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="0.5"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+            </svg>
+        </div>
+        <div class="relative z-10 flex flex-col justify-center px-16">
+            <div class="flex items-center space-x-3 mb-8">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                    </svg>
+                </div>
+                <span class="text-3xl font-bold text-white">FlagDrop</span>
+            </div>
+            <h1 class="text-4xl font-bold text-white mb-4 leading-tight">
+                Ship features<br>with confidence
+            </h1>
+            <p class="text-lg text-brand-200 max-w-md leading-relaxed">
+                Control feature rollouts without deploying code. Simple, affordable feature flags for teams that ship fast.
+            </p>
+            <div class="mt-12 space-y-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-brand-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <span class="text-brand-100">Boolean, string, number & JSON flags</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-brand-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <span class="text-brand-100">Multi-environment management</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-brand-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <span class="text-brand-100">Lightweight REST API for evaluation</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-brand-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <span class="text-brand-100">Full audit log & usage analytics</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel - Login Form -->
+    <div class="flex-1 flex items-center justify-center px-6 py-12 lg:px-8">
+        <div class="w-full max-w-sm">
+            <!-- Mobile logo -->
+            <div class="lg:hidden flex items-center justify-center space-x-2 mb-8">
+                <div class="w-10 h-10 bg-brand-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                    </svg>
+                </div>
+                <span class="text-2xl font-bold text-gray-900">FlagDrop</span>
+            </div>
+
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">Welcome back</h2>
+                <p class="mt-2 text-sm text-gray-600">Sign in to your account to continue</p>
+            </div>
+
+            {% if error %}
+            <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center space-x-2 fade-in">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/login" class="space-y-5">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="{{ email | default('', true) }}"
+                        required
+                        autocomplete="email"
+                        class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                        placeholder="you@company.com"
+                    >
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    </div>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                        autocomplete="current-password"
+                        class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                        placeholder="Enter your password"
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-150 active:scale-[0.98]"
+                >
+                    Sign in
+                </button>
+            </form>
+
+            <p class="mt-8 text-center text-sm text-gray-500">
+                Don't have an account?
+                <a href="/signup" class="font-semibold text-brand-600 hover:text-brand-500 transition-colors">Create one free</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

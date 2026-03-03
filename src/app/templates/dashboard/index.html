@@ -1,0 +1,68 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Dashboard — FlagDrop{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">Welcome back, {{ user.full_name.split(' ')[0] }}</h1>
+    <p class="mt-1 text-sm text-gray-500">Manage your feature flags and projects</p>
+</div>
+
+<!-- Projects Section -->
+<div class="flex items-center justify-between mb-6">
+    <h2 class="text-lg font-semibold text-gray-900">Your Projects</h2>
+    <a href="/projects/new" class="inline-flex items-center px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm active:scale-[0.98]">
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        New Project
+    </a>
+</div>
+
+{% if projects %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for project in projects %}
+    <a href="/projects/{{ project.id }}/flags" class="group block bg-white rounded-xl border border-gray-200 p-6 hover:border-brand-300 hover:shadow-md transition-all duration-200">
+        <div class="flex items-start justify-between">
+            <div class="w-10 h-10 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center font-semibold text-sm group-hover:bg-brand-100 transition-colors">
+                {{ project.name[0] | upper }}
+            </div>
+            <svg class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </div>
+        <h3 class="mt-4 text-base font-semibold text-gray-900 group-hover:text-brand-700 transition-colors">{{ project.name }}</h3>
+        {% if project.description %}
+        <p class="mt-1 text-sm text-gray-500 line-clamp-2">{{ project.description }}</p>
+        {% endif %}
+        <div class="mt-4 flex items-center space-x-4 text-xs text-gray-400">
+            <span class="flex items-center space-x-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                <span>{{ project.flags | length }} flags</span>
+            </span>
+            <span class="flex items-center space-x-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <span>{{ project.environments | length }} envs</span>
+            </span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+    <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+        </svg>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-900">No projects yet</h3>
+    <p class="mt-2 text-sm text-gray-500 max-w-sm mx-auto">Create your first project to start managing feature flags across your applications.</p>
+    <a href="/projects/new" class="mt-6 inline-flex items-center px-5 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm">
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Create your first project
+    </a>
+</div>
+{% endif %}
+{% endblock %}

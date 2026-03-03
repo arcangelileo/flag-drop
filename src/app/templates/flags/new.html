@@ -1,0 +1,99 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}New Flag — {{ project.name }} — FlagDrop{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <a href="/projects/{{ project.id }}/flags" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4 transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Back to Flags
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900">Create a new flag</h1>
+        <p class="mt-1 text-sm text-gray-500">Add a feature flag to {{ project.name }}</p>
+    </div>
+
+    {% if errors %}
+    <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm fade-in">
+        <ul class="list-disc list-inside space-y-0.5">
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/projects/{{ project.id }}/flags/new" class="bg-white rounded-xl border border-gray-200 shadow-sm">
+        <div class="p-6 space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1.5">Flag name</label>
+                    <input type="text" id="name" name="name" value="{{ name | default('', true) }}" required
+                        class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                        placeholder="Dark Mode"
+                        autofocus
+                        oninput="document.getElementById('key').value = this.value.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/[\s-]+/g, '_').replace(/^_|_$/g, '')">
+                </div>
+                <div>
+                    <label for="key" class="block text-sm font-medium text-gray-700 mb-1.5">Flag key</label>
+                    <input type="text" id="key" name="key" value="{{ key | default('', true) }}" required
+                        class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm font-mono placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                        placeholder="dark_mode">
+                    <p class="mt-1 text-xs text-gray-500">Used in SDK/API calls. Auto-generated from name.</p>
+                </div>
+            </div>
+
+            <div>
+                <label for="flag_type" class="block text-sm font-medium text-gray-700 mb-1.5">Value type</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {% set types = [
+                        ('boolean', 'Boolean', 'True / False toggle', 'bg-blue-50 border-blue-200 text-blue-700'),
+                        ('string', 'String', 'Text values', 'bg-purple-50 border-purple-200 text-purple-700'),
+                        ('number', 'Number', 'Numeric values', 'bg-amber-50 border-amber-200 text-amber-700'),
+                        ('json', 'JSON', 'Complex objects', 'bg-green-50 border-green-200 text-green-700')
+                    ] %}
+                    {% for type_val, type_label, type_desc, type_style in types %}
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="flag_type" value="{{ type_val }}"
+                            {% if (flag_type | default('boolean', true)) == type_val %}checked{% endif %}
+                            class="peer sr-only">
+                        <div class="border-2 border-gray-200 rounded-lg p-3 text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:border-gray-300 transition-colors">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ type_style }} mb-1.5">{{ type_label }}</span>
+                            <p class="text-xs text-gray-500">{{ type_desc }}</p>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-1.5">Description <span class="text-gray-400 font-normal">(optional)</span></label>
+                <textarea id="description" name="description" rows="2"
+                    class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors resize-none"
+                    placeholder="What this flag controls..."
+                >{{ description | default('', true) }}</textarea>
+            </div>
+
+            <div>
+                <label for="default_value" class="block text-sm font-medium text-gray-700 mb-1.5">Default value <span class="text-gray-400 font-normal">(optional)</span></label>
+                <input type="text" id="default_value" name="default_value" value="{{ default_value | default('', true) }}"
+                    class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm font-mono placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                    placeholder="false">
+                <p class="mt-1 text-xs text-gray-500">JSON-encoded value. Boolean: <code class="bg-gray-100 px-1 rounded">true</code>/<code class="bg-gray-100 px-1 rounded">false</code>, String: <code class="bg-gray-100 px-1 rounded">"hello"</code>, Number: <code class="bg-gray-100 px-1 rounded">42</code></p>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 px-6 py-4 rounded-b-xl border-t border-gray-200 flex items-center justify-between">
+            <p class="text-xs text-gray-500">Flag values will be created for each environment, initially disabled.</p>
+            <div class="flex items-center space-x-3">
+                <a href="/projects/{{ project.id }}/flags" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">Cancel</a>
+                <button type="submit"
+                    class="px-5 py-2.5 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all shadow-sm active:scale-[0.98]">
+                    Create flag
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

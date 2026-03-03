@@ -1,0 +1,94 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Flags — {{ project.name }} — FlagDrop{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Feature Flags</h1>
+        <p class="mt-1 text-sm text-gray-500">{{ project.name }} &middot; {{ flags | length }} flag{{ 's' if flags | length != 1 else '' }}</p>
+    </div>
+    <div class="flex items-center space-x-3">
+        <a href="/projects/{{ project.id }}/settings"
+           class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <svg class="w-4 h-4 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Settings
+        </a>
+        <a href="/projects/{{ project.id }}/flags/new"
+           class="inline-flex items-center px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm active:scale-[0.98]">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            New Flag
+        </a>
+    </div>
+</div>
+
+{% if success %}
+<div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex items-center space-x-2 fade-in">
+    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <span>{{ success }}</span>
+</div>
+{% endif %}
+
+{% if flags %}
+<!-- Environment legend -->
+{% if environments %}
+<div class="mb-4 flex flex-wrap gap-2">
+    {% for env in environments %}
+    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+          style="background-color: {{ env.color }}15; color: {{ env.color }}; border: 1px solid {{ env.color }}30">
+        <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: {{ env.color }}"></span>
+        {{ env.name }}
+    </span>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="divide-y divide-gray-100">
+        {% for flag in flags %}
+        <a href="/projects/{{ project.id }}/flags/{{ flag.id }}" class="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors group">
+            <div class="min-w-0 flex-1">
+                <div class="flex items-center space-x-3">
+                    <h3 class="text-sm font-semibold text-gray-900 group-hover:text-brand-600 transition-colors truncate">{{ flag.name }}</h3>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-gray-100 text-gray-600">{{ flag.key }}</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                        {% if flag.flag_type == 'boolean' %}bg-blue-50 text-blue-700
+                        {% elif flag.flag_type == 'string' %}bg-purple-50 text-purple-700
+                        {% elif flag.flag_type == 'number' %}bg-amber-50 text-amber-700
+                        {% else %}bg-green-50 text-green-700
+                        {% endif %}">{{ flag.flag_type }}</span>
+                </div>
+                {% if flag.description %}
+                <p class="mt-1 text-xs text-gray-500 truncate">{{ flag.description }}</p>
+                {% endif %}
+            </div>
+            <div class="ml-4 flex items-center space-x-2 flex-shrink-0">
+                {% for fv in flag.flag_values %}
+                <span class="w-3 h-3 rounded-full border-2 {% if fv.enabled %}border-transparent{% else %}border-gray-300{% endif %}"
+                      style="{% if fv.enabled %}background-color: {{ fv.environment.color }}{% endif %}"
+                      title="{{ fv.environment.name }}: {{ 'On' if fv.enabled else 'Off' }}"></span>
+                {% endfor %}
+                <svg class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<!-- Empty state -->
+<div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+    <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/>
+        </svg>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-900">No flags yet</h3>
+    <p class="mt-2 text-sm text-gray-500 max-w-sm mx-auto">Create your first feature flag to start controlling feature rollouts across environments.</p>
+    <a href="/projects/{{ project.id }}/flags/new"
+       class="mt-6 inline-flex items-center px-5 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm">
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Create your first flag
+    </a>
+</div>
+{% endif %}
+{% endblock %}
