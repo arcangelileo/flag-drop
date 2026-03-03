@@ -1,0 +1,126 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Audit Log — {{ project.name }} — FlagDrop{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">Audit Log</h1>
+    <p class="mt-1 text-sm text-gray-500">{{ project.name }} &middot; {{ total }} event{{ 's' if total != 1 else '' }}</p>
+</div>
+
+{% if logs %}
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="divide-y divide-gray-100">
+        {% for log in logs %}
+        <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+            <div class="flex items-start justify-between">
+                <div class="flex items-start space-x-3 min-w-0">
+                    <!-- Action icon -->
+                    <div class="mt-0.5 flex-shrink-0">
+                        {% if log.action == 'created' %}
+                        <div class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        </div>
+                        {% elif log.action == 'deleted' %}
+                        <div class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </div>
+                        {% elif log.action == 'toggled' %}
+                        <div class="w-8 h-8 bg-brand-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                        </div>
+                        {% elif log.action == 'revoked' %}
+                        <div class="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                        </div>
+                        {% else %}
+                        <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="min-w-0">
+                        <p class="text-sm text-gray-900">
+                            <span class="font-medium">{{ log.user.full_name if log.user else 'System' }}</span>
+                            <span class="text-gray-500">
+                                {% if log.action == 'created' %}created{% elif log.action == 'deleted' %}deleted{% elif log.action == 'toggled' %}toggled{% elif log.action == 'revoked' %}revoked{% else %}updated{% endif %}
+                            </span>
+                            <span class="font-medium">
+                                {% if log.entity_type == 'flag' and log.flag %}
+                                    {{ log.flag.name }}
+                                {% elif log.entity_type == 'flag_value' and log.flag %}
+                                    value for {{ log.flag.name }}
+                                {% elif log.entity_type == 'api_key' %}
+                                    API key
+                                {% else %}
+                                    {{ log.entity_type }}
+                                {% endif %}
+                            </span>
+                        </p>
+
+                        {% if log.new_value or log.old_value %}
+                        <div class="mt-1 flex flex-wrap gap-2">
+                            {% if log.old_value %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-red-50 text-red-700 max-w-xs truncate" title="{{ log.old_value }}">
+                                - {{ log.old_value[:80] }}{% if log.old_value | length > 80 %}...{% endif %}
+                            </span>
+                            {% endif %}
+                            {% if log.new_value %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-green-50 text-green-700 max-w-xs truncate" title="{{ log.new_value }}">
+                                + {{ log.new_value[:80] }}{% if log.new_value | length > 80 %}...{% endif %}
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Timestamp -->
+                <div class="text-xs text-gray-400 flex-shrink-0 ml-4">
+                    {{ log.created_at.strftime('%b %d, %Y') }}<br>
+                    {{ log.created_at.strftime('%H:%M:%S') }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<div class="mt-6 flex items-center justify-between">
+    <p class="text-sm text-gray-500">
+        Page {{ page }} of {{ total_pages }}
+    </p>
+    <div class="flex items-center space-x-2">
+        {% if page > 1 %}
+        <a href="/projects/{{ project.id }}/audit-log?page={{ page - 1 }}"
+           class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            Previous
+        </a>
+        {% endif %}
+        {% if page < total_pages %}
+        <a href="/projects/{{ project.id }}/audit-log?page={{ page + 1 }}"
+           class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            Next
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<!-- Empty state -->
+<div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+    <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+        </svg>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-900">No activity yet</h3>
+    <p class="mt-2 text-sm text-gray-500 max-w-sm mx-auto">The audit log will show all changes to flags, values, environments, and API keys for this project.</p>
+</div>
+{% endif %}
+{% endblock %}

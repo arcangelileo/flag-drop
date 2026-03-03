@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user
 from app.database import get_db
 from app.models.user import User
+from app.services.audit import log_action
 from app.services.environments import get_environments_for_project
 from app.services.flags import (
     VALID_FLAG_TYPES,
@@ -132,13 +133,20 @@ async def create_flag_handler(
             status_code=400,
         )
 
-    await create_flag(
+    flag = await create_flag(
         db, project_id, name,
         key=key,
         flag_type=flag_type,
         default_value=default_value or None,
         description=description or None,
     )
+
+    await log_action(
+        db, action="created", entity_type="flag", entity_id=flag.id,
+        project_id=project_id, user_id=user.id, flag_id=flag.id,
+        new_value={"name": name, "key": key, "type": flag_type},
+    )
+
     return RedirectResponse(
         url=f"/projects/{project_id}/flags?success=Flag+created+successfully",
         status_code=302,
@@ -163,7 +171,6 @@ async def flag_detail_page(
 
     environments = await get_environments_for_project(db, project_id)
 
-    # Build a mapping of environment_id -> flag_value for easy template access
     env_values = {}
     for fv in flag.flag_values:
         env_values[fv.environment_id] = fv
@@ -209,7 +216,17 @@ async def update_flag_handler(
             status_code=302,
         )
 
+    old_name = flag.name
+    old_desc = flag.description
     await update_flag(db, flag, name=name, description=description or None)
+
+    await log_action(
+        db, action="updated", entity_type="flag", entity_id=flag.id,
+        project_id=project_id, user_id=user.id, flag_id=flag.id,
+        old_value={"name": old_name, "description": old_desc},
+        new_value={"name": name, "description": description or None},
+    )
+
     return RedirectResponse(
         url=f"/projects/{project_id}/flags/{flag_id}?success=Flag+updated",
         status_code=302,
@@ -232,6 +249,12 @@ async def delete_flag_handler(
     if not flag:
         return RedirectResponse(url=f"/projects/{project_id}/flags", status_code=302)
 
+    await log_action(
+        db, action="deleted", entity_type="flag", entity_id=flag.id,
+        project_id=project_id, user_id=user.id,
+        old_value={"name": flag.name, "key": flag.key, "type": flag.flag_type},
+    )
+
     await delete_flag(db, flag)
     return RedirectResponse(
         url=f"/projects/{project_id}/flags?success=Flag+deleted",
@@ -252,13 +275,22 @@ async def toggle_flag_handler(
     if not project:
         return RedirectResponse(url="/dashboard", status_code=302)
 
+    flag = await get_flag_by_id(db, flag_id, project_id)
+
     fv = await toggle_flag_value(db, flag_value_id)
     if not fv:
         return RedirectResponse(
             url=f"/projects/{project_id}/flags/{flag_id}", status_code=302
         )
 
-    # For HTMX requests, return just the toggle button partial
+    await log_action(
+        db, action="toggled", entity_type="flag_value", entity_id=fv.id,
+        project_id=project_id, user_id=user.id,
+        flag_id=flag.id if flag else None,
+        old_value={"enabled": not fv.enabled},
+        new_value={"enabled": fv.enabled, "environment_id": fv.environment_id},
+    )
+
     if request.headers.get("HX-Request"):
         return HTMLResponse(
             _render_toggle_button(project_id, flag_id, fv.id, fv.enabled)
@@ -298,7 +330,22 @@ async def update_flag_value_handler(
                 status_code=302,
             )
 
+    # Find old value for audit
+    old_val = None
+    for fv in flag.flag_values:
+        if fv.id == flag_value_id:
+            old_val = fv.value
+            break
+
     await update_flag_value(db, flag_value_id, value=value)
+
+    await log_action(
+        db, action="updated", entity_type="flag_value", entity_id=flag_value_id,
+        project_id=project_id, user_id=user.id, flag_id=flag.id,
+        old_value={"value": old_val},
+        new_value={"value": value},
+    )
+
     return RedirectResponse(
         url=f"/projects/{project_id}/flags/{flag_id}?success=Value+updated",
         status_code=302,

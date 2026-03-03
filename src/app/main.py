@@ -3,9 +3,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
+from app.api.api_keys import router as api_keys_router
+from app.api.audit import router as audit_router
 from app.api.auth import router as auth_router
 from app.api.dashboard import router as dashboard_router
 from app.api.environments import router as environments_router
+from app.api.evaluation import router as evaluation_router
 from app.api.flags import router as flags_router
 from app.api.health import router as health_router
 from app.api.projects import router as projects_router
@@ -34,6 +37,9 @@ app.include_router(dashboard_router)
 app.include_router(projects_router)
 app.include_router(environments_router)
 app.include_router(flags_router)
+app.include_router(api_keys_router)
+app.include_router(audit_router)
+app.include_router(evaluation_router)
 
 
 @app.get("/", include_in_schema=False)

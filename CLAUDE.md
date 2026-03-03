@@ -45,10 +45,10 @@ Phase: DEVELOPMENT
 - [x] Environments management: auto-create defaults, list, add custom environments
 - [x] Flags CRUD: create, list, update, delete flags within a project
 - [x] Flag values: per-environment values and enable/disable toggles
-- [ ] API keys: generate, list, revoke per project+environment
-- [ ] Flag evaluation API: GET /api/v1/flags and /api/v1/flags/{key} with API key auth
-- [ ] Audit log: record all flag changes, display in dashboard
-- [ ] Usage tracking: count evaluations, daily aggregation, display stats
+- [x] API keys: generate, list, revoke per project+environment
+- [x] Flag evaluation API: GET /api/v1/flags and /api/v1/flags/{key} with API key auth
+- [x] Audit log: record all flag changes, display in dashboard
+- [x] Usage tracking: count evaluations, daily aggregation, display stats
 - [ ] Dashboard UI: project list, flag management, toggles, audit log, usage charts
 - [ ] Write comprehensive tests (models, auth, API, flag evaluation)
 - [ ] Dockerfile and docker-compose.yml
@@ -122,6 +122,30 @@ Phase: DEVELOPMENT
 - All templates use Tailwind CSS, responsive design, proper empty/success/error states
 - Test suite: 77 tests passing (37 new tests for projects, environments, flags)
 
+### Session 5 — DEVELOPMENT (API Keys, Evaluation API, Audit Log, Usage)
+- Built API key management:
+  - Generate API keys with SHA-256 hashing (raw key shown once on creation)
+  - Key prefix `fd_` for identification, last 4 chars stored for display
+  - List, revoke, delete keys per project+environment
+  - UI with create form, key table, one-time key display, Quick Start curl examples
+- Built Flag evaluation REST API:
+  - `GET /api/v1/flags` — evaluate all flags for project+environment
+  - `GET /api/v1/flags/{key}` — evaluate single flag by key
+  - Bearer token auth via API key, returns JSON with flag values
+  - Records usage per evaluation (daily counts per flag per environment)
+- Built Audit log system:
+  - `log_action()` records all flag/API key mutations with actor, old/new values
+  - Paginated audit log page (25 per page) with action-specific icons
+  - Diff-style display of old/new values
+  - Integrated into all flag CRUD operations (create, update, delete, toggle, value update)
+- Built Usage tracking service:
+  - `record_evaluation()` with daily upsert pattern
+  - `get_usage_for_project()` and `get_total_evaluations_for_project()` queries
+- Created 3 service modules: api_keys, audit, usage
+- Created 3 API route modules: api_keys, evaluation, audit
+- Created 2 templates: api_keys/list.html, audit/list.html
+- Test suite: 105 tests passing (28 new tests for API keys, evaluation, audit)
+
 ## Known Issues
 - No virtualenv available (python3-venv not installed, no sudo access). Dependencies installed via `pip3 install --break-system-packages`. Consider Dockerfile for clean env.
 
@@ -143,10 +167,13 @@ flag-drop/
 │       ├── database.py        # Async SQLAlchemy engine & session
 │       ├── api/
 │       │   ├── __init__.py
+│       │   ├── api_keys.py    # API key management routes
+│       │   ├── audit.py       # Audit log routes
 │       │   ├── auth.py        # Auth routes (login, signup, logout)
 │       │   ├── dashboard.py   # Dashboard route
 │       │   ├── deps.py        # Auth dependency injectors
 │       │   ├── environments.py # Environments CRUD routes
+│       │   ├── evaluation.py  # Flag evaluation REST API
 │       │   ├── flags.py       # Flags CRUD + toggles routes
 │       │   ├── health.py      # Health check endpoint
 │       │   └── projects.py    # Projects CRUD routes
@@ -165,10 +192,13 @@ flag-drop/
 │       │   └── auth.py        # Auth Pydantic schemas
 │       ├── services/
 │       │   ├── __init__.py
-│       │   ├── auth.py        # Auth service (JWT, passwords, API keys)
+│       │   ├── api_keys.py    # API key CRUD service
+│       │   ├── audit.py       # Audit logging service
+│       │   ├── auth.py        # Auth service (JWT, passwords)
 │       │   ├── environments.py # Environments service
 │       │   ├── flags.py       # Flags + flag values service
-│       │   └── projects.py    # Projects service
+│       │   ├── projects.py    # Projects service
+│       │   └── usage.py       # Usage tracking service
 │       └── templates/
 │           ├── layouts/
 │           │   ├── app.html   # Authenticated app layout with nav
@@ -178,6 +208,10 @@ flag-drop/
 │           │   └── signup.html
 │           ├── dashboard/
 │           │   └── index.html
+│           ├── api_keys/
+│           │   └── list.html
+│           ├── audit/
+│           │   └── list.html
 │           ├── environments/
 │           │   └── list.html
 │           ├── flags/
@@ -193,6 +227,9 @@ flag-drop/
     ├── test_auth.py           # Auth tests (30 tests)
     ├── test_environments.py   # Environment tests (6 tests)
     ├── test_flags.py          # Flag tests (22 tests)
+    ├── test_api_keys.py       # API key tests (9 tests)
+    ├── test_audit.py          # Audit log tests (9 tests)
+    ├── test_evaluation.py     # Flag evaluation API tests (10 tests)
     ├── test_health.py         # Health check tests (2 tests)
     ├── test_models.py         # Model tests (8 tests)
     └── test_projects.py       # Project tests (11 tests)
