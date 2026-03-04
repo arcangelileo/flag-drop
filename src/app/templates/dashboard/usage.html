@@ -1,0 +1,142 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Usage — {{ project.name }} — FlagDrop{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">Usage Analytics</h1>
+    <p class="mt-1 text-sm text-gray-500">{{ project.name }} &middot; Last 30 days</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Total Evaluations</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ "{:,}".format(total_evaluations) }}</p>
+            </div>
+            <div class="w-10 h-10 bg-brand-50 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+            </div>
+        </div>
+        <p class="mt-2 text-xs text-gray-400">Last 30 days</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Active Flags</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ total_flags }}</p>
+            </div>
+            <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Avg Daily</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">
+                    {% if total_evaluations > 0 %}
+                    {{ "{:,.0f}".format(total_evaluations / 30) }}
+                    {% else %}
+                    0
+                    {% endif %}
+                </p>
+            </div>
+            <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                </svg>
+            </div>
+        </div>
+        <p class="mt-2 text-xs text-gray-400">Per day average</p>
+    </div>
+</div>
+
+<!-- Evaluations Chart -->
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-8">
+    <h2 class="text-base font-semibold text-gray-900 mb-6">Daily Evaluations</h2>
+
+    {% if total_evaluations > 0 %}
+    <div class="relative">
+        <!-- Y-axis labels -->
+        <div class="flex flex-col justify-between h-48 absolute left-0 top-0 bottom-8 text-xs text-gray-400 pr-2">
+            <span>{{ "{:,}".format(max_value) }}</span>
+            <span>{{ "{:,}".format((max_value * 0.5)|int) }}</span>
+            <span>0</span>
+        </div>
+        <!-- Chart area -->
+        <div class="ml-12">
+            <div class="flex items-end space-x-1 h-48 border-b border-l border-gray-200 px-1">
+                {% for value in chart_values %}
+                <div class="flex-1 flex flex-col items-center justify-end group relative">
+                    <div class="absolute -top-8 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                        {{ "{:,}".format(value) }} evals
+                    </div>
+                    <div class="w-full rounded-t transition-all duration-300 group-hover:opacity-80"
+                         style="height: {{ (value / max_value * 100)|int if max_value > 0 else 0 }}%; min-height: {% if value > 0 %}4px{% else %}0{% endif %}; background: linear-gradient(to top, #4f46e5, #818cf8);"></div>
+                </div>
+                {% endfor %}
+            </div>
+            <!-- X-axis labels -->
+            <div class="flex justify-between mt-2 text-xs text-gray-400">
+                {% for day in chart_days %}
+                {% if loop.index0 % 2 == 0 or chart_days | length <= 7 %}
+                <span class="flex-1 text-center">{{ day }}</span>
+                {% else %}
+                <span class="flex-1"></span>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="flex flex-col items-center justify-center h-48 text-gray-400">
+        <svg class="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <p class="text-sm font-medium">No evaluations yet</p>
+        <p class="text-xs mt-1">Create an API key and start evaluating flags to see usage data here.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Top Flags by Usage -->
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-base font-semibold text-gray-900">Top Flags by Usage</h2>
+        <p class="text-sm text-gray-500 mt-0.5">Most evaluated flags in the last 30 days</p>
+    </div>
+
+    {% if top_flags %}
+    <div class="divide-y divide-gray-100">
+        {% for flag_name, count in top_flags %}
+        <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+            <div class="flex items-center space-x-3 min-w-0">
+                <div class="w-8 h-8 bg-brand-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span class="text-xs font-bold text-brand-600">{{ loop.index }}</span>
+                </div>
+                <span class="text-sm font-medium text-gray-900 truncate">{{ flag_name }}</span>
+            </div>
+            <div class="flex items-center space-x-3 flex-shrink-0">
+                <div class="w-32 bg-gray-100 rounded-full h-2 hidden sm:block">
+                    <div class="bg-brand-500 h-2 rounded-full transition-all duration-500" style="width: {{ (count / top_flags[0][1] * 100)|int if top_flags[0][1] > 0 else 0 }}%"></div>
+                </div>
+                <span class="text-sm font-semibold text-gray-700 tabular-nums w-20 text-right">{{ "{:,}".format(count) }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="p-8 text-center text-gray-400">
+        <p class="text-sm">No flag usage data available yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

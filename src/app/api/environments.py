@@ -1,3 +1,5 @@
+import re
+
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -13,6 +15,8 @@ from app.services.environments import (
     get_environments_for_project,
 )
 from app.services.projects import get_project_by_id
+
+HEX_COLOR_RE = re.compile(r'^#[0-9A-Fa-f]{6}$')
 
 router = APIRouter(prefix="/projects/{project_id}/environments", tags=["environments"])
 
@@ -90,10 +94,13 @@ async def create_environment_handler(
             status_code=400,
         )
 
+    if not HEX_COLOR_RE.match(color):
+        color = "#6B7280"
+
     await create_environment(db, project_id, name, color)
     return RedirectResponse(
         url=f"/projects/{project_id}/environments?success=Environment+created",
-        status_code=302,
+        status_code=303,
     )
 
 
@@ -118,5 +125,5 @@ async def delete_environment_handler(
     await delete_environment(db, environment)
     return RedirectResponse(
         url=f"/projects/{project_id}/environments?success=Environment+deleted",
-        status_code=302,
+        status_code=303,
     )

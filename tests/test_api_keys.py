@@ -34,7 +34,7 @@ async def test_create_api_key(authenticated_client, db):
         "name": "Production Server",
         "environment_id": envs[0].id,
     }, follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     assert "created_key=" in response.headers["location"]
     assert "created_name=" in response.headers["location"]
 
@@ -51,7 +51,7 @@ async def test_create_api_key_shows_key_once(authenticated_client, db):
         "name": "My Key",
         "environment_id": envs[0].id,
     }, follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     redirect_url = response.headers["location"]
     assert "created_key=fd_" in redirect_url
 
@@ -102,7 +102,7 @@ async def test_revoke_api_key(authenticated_client, db):
         f"/projects/{project.id}/api-keys/{api_key.id}/revoke",
         follow_redirects=False,
     )
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     assert "revoked" in response.headers["location"].lower()
 
     await db.refresh(api_key)
@@ -123,7 +123,7 @@ async def test_delete_api_key(authenticated_client, db):
         f"/projects/{project.id}/api-keys/{api_key.id}/delete",
         follow_redirects=False,
     )
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
 
     from sqlalchemy import select
     from app.models.api_key import APIKey

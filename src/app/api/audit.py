@@ -25,7 +25,10 @@ async def audit_log_page(
     if not project:
         return RedirectResponse(url="/dashboard", status_code=302)
 
-    page = int(request.query_params.get("page", 1))
+    try:
+        page = max(1, int(request.query_params.get("page", 1)))
+    except (ValueError, TypeError):
+        page = 1
     per_page = 25
     offset = (page - 1) * per_page
 

@@ -1,4 +1,5 @@
 import json
+import re
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -104,8 +105,12 @@ async def create_flag_handler(
     errors = []
     if not name:
         errors.append("Flag name is required.")
+    elif len(name) > 255:
+        errors.append("Flag name must be under 255 characters.")
     if not key:
         errors.append("Flag key is required.")
+    elif not re.match(r'^[a-z0-9_]+$', key):
+        errors.append("Flag key must contain only lowercase letters, numbers, and underscores.")
     if flag_type not in VALID_FLAG_TYPES:
         errors.append(f"Invalid flag type. Must be one of: {', '.join(VALID_FLAG_TYPES)}")
 
@@ -149,7 +154,7 @@ async def create_flag_handler(
 
     return RedirectResponse(
         url=f"/projects/{project_id}/flags?success=Flag+created+successfully",
-        status_code=302,
+        status_code=303,
     )
 
 
@@ -186,6 +191,7 @@ async def flag_detail_page(
             "env_values": env_values,
             "active_nav": "flags",
             "success": request.query_params.get("success"),
+            "error": request.query_params.get("error"),
         },
     )
 
@@ -212,8 +218,8 @@ async def update_flag_handler(
 
     if not name:
         return RedirectResponse(
-            url=f"/projects/{project_id}/flags/{flag_id}",
-            status_code=302,
+            url=f"/projects/{project_id}/flags/{flag_id}?error=Flag+name+is+required",
+            status_code=303,
         )
 
     old_name = flag.name
@@ -229,7 +235,7 @@ async def update_flag_handler(
 
     return RedirectResponse(
         url=f"/projects/{project_id}/flags/{flag_id}?success=Flag+updated",
-        status_code=302,
+        status_code=303,
     )
 
 
@@ -258,7 +264,7 @@ async def delete_flag_handler(
     await delete_flag(db, flag)
     return RedirectResponse(
         url=f"/projects/{project_id}/flags?success=Flag+deleted",
-        status_code=302,
+        status_code=303,
     )
 
 
@@ -276,8 +282,10 @@ async def toggle_flag_handler(
         return RedirectResponse(url="/dashboard", status_code=302)
 
     flag = await get_flag_by_id(db, flag_id, project_id)
+    if not flag:
+        return RedirectResponse(url=f"/projects/{project_id}/flags", status_code=303)
 
-    fv = await toggle_flag_value(db, flag_value_id)
+    fv = await toggle_flag_value(db, flag_value_id, flag_id=flag_id)
     if not fv:
         return RedirectResponse(
             url=f"/projects/{project_id}/flags/{flag_id}", status_code=302
@@ -286,7 +294,7 @@ async def toggle_flag_handler(
     await log_action(
         db, action="toggled", entity_type="flag_value", entity_id=fv.id,
         project_id=project_id, user_id=user.id,
-        flag_id=flag.id if flag else None,
+        flag_id=flag.id,
         old_value={"enabled": not fv.enabled},
         new_value={"enabled": fv.enabled, "environment_id": fv.environment_id},
     )
@@ -298,7 +306,7 @@ async def toggle_flag_handler(
 
     return RedirectResponse(
         url=f"/projects/{project_id}/flags/{flag_id}?success=Flag+toggled",
-        status_code=302,
+        status_code=303,
     )
 
 
@@ -325,9 +333,10 @@ async def update_flag_value_handler(
     if value:
         val_err = validate_flag_value(flag.flag_type, value)
         if val_err:
+            from urllib.parse import quote
             return RedirectResponse(
-                url=f"/projects/{project_id}/flags/{flag_id}",
-                status_code=302,
+                url=f"/projects/{project_id}/flags/{flag_id}?error={quote(val_err)}",
+                status_code=303,
             )
 
     # Find old value for audit
@@ -337,7 +346,7 @@ async def update_flag_value_handler(
             old_val = fv.value
             break
 
-    await update_flag_value(db, flag_value_id, value=value)
+    await update_flag_value(db, flag_value_id, value=value, flag_id=flag_id)
 
     await log_action(
         db, action="updated", entity_type="flag_value", entity_id=flag_value_id,
@@ -348,7 +357,7 @@ async def update_flag_value_handler(
 
     return RedirectResponse(
         url=f"/projects/{project_id}/flags/{flag_id}?success=Value+updated",
-        status_code=302,
+        status_code=303,
     )
 
 
@@ -371,7 +380,8 @@ def _render_toggle_button(
           class="inline-flex items-center space-x-2">
         <button type="submit"
                 class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 {bg}"
-                role="switch" aria-checked="{'true' if enabled else 'false'}">
+                role="switch" aria-checked="{'true' if enabled else 'false'}"
+                aria-label="Toggle flag {'on' if enabled else 'off'}">
             <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {translate}"></span>
         </button>
         <span class="text-sm font-medium {'text-brand-600' if enabled else 'text-gray-500'}">{label}</span>

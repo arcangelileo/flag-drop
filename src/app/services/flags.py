@@ -137,11 +137,12 @@ async def delete_flag(db: AsyncSession, flag: Flag) -> None:
 
 
 async def toggle_flag_value(
-    db: AsyncSession, flag_value_id: str
+    db: AsyncSession, flag_value_id: str, flag_id: str | None = None
 ) -> FlagValue | None:
-    result = await db.execute(
-        select(FlagValue).where(FlagValue.id == flag_value_id)
-    )
+    query = select(FlagValue).where(FlagValue.id == flag_value_id)
+    if flag_id:
+        query = query.where(FlagValue.flag_id == flag_id)
+    result = await db.execute(query)
     fv = result.scalar_one_or_none()
     if not fv:
         return None
@@ -156,10 +157,12 @@ async def update_flag_value(
     flag_value_id: str,
     value: str | None = None,
     enabled: bool | None = None,
+    flag_id: str | None = None,
 ) -> FlagValue | None:
-    result = await db.execute(
-        select(FlagValue).where(FlagValue.id == flag_value_id)
-    )
+    query = select(FlagValue).where(FlagValue.id == flag_value_id)
+    if flag_id:
+        query = query.where(FlagValue.flag_id == flag_id)
+    result = await db.execute(query)
     fv = result.scalar_one_or_none()
     if not fv:
         return None

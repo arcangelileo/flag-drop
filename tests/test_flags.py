@@ -39,7 +39,7 @@ async def test_create_flag_boolean(authenticated_client, db):
         "description": "Enable dark mode",
         "default_value": "false",
     }, follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     assert "success" in response.headers["location"]
 
 
@@ -54,7 +54,7 @@ async def test_create_flag_string(authenticated_client, db):
         "description": "Homepage banner text",
         "default_value": '"Welcome!"',
     }, follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
 
 
 async def test_create_flag_missing_name(authenticated_client, db):
@@ -137,7 +137,7 @@ async def test_update_flag(authenticated_client, db):
         "name": "New Flag Name",
         "description": "Updated description",
     }, follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     assert "success" in response.headers["location"]
 
 
@@ -153,7 +153,7 @@ async def test_delete_flag(authenticated_client, db):
         f"/projects/{project.id}/flags/{flag.id}/delete",
         follow_redirects=False,
     )
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     assert "success" in response.headers["location"]
 
     # Verify deleted
@@ -183,7 +183,7 @@ async def test_toggle_flag_value(authenticated_client, db):
         f"/projects/{project.id}/flags/{flag.id}/toggle/{fv.id}",
         follow_redirects=False,
     )
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
 
     await db.refresh(fv)
     assert fv.enabled is True
@@ -208,7 +208,7 @@ async def test_update_flag_value(authenticated_client, db):
         data={"value": '"new_value"'},
         follow_redirects=False,
     )
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
 
     await db.refresh(fv)
     assert fv.value == '"new_value"'

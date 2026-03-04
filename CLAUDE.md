@@ -1,6 +1,6 @@
 # FlagDrop
 
-Phase: DEVELOPMENT
+Phase: DEPLOYMENT
 
 ## Project Spec
 - **Repo**: https://github.com/arcangelileo/flag-drop
@@ -49,10 +49,10 @@ Phase: DEVELOPMENT
 - [x] Flag evaluation API: GET /api/v1/flags and /api/v1/flags/{key} with API key auth
 - [x] Audit log: record all flag changes, display in dashboard
 - [x] Usage tracking: count evaluations, daily aggregation, display stats
-- [ ] Dashboard UI: project list, flag management, toggles, audit log, usage charts
-- [ ] Write comprehensive tests (models, auth, API, flag evaluation)
-- [ ] Dockerfile and docker-compose.yml
-- [ ] README with setup, usage, API docs, and deploy instructions
+- [x] Dashboard UI: project list, flag management, toggles, audit log, usage charts
+- [x] Write comprehensive tests (models, auth, API, flag evaluation)
+- [x] Dockerfile and docker-compose.yml
+- [x] README with setup, usage, API docs, and deploy instructions
 
 ## Progress Log
 ### Session 1 — IDEATION
@@ -146,18 +146,93 @@ Phase: DEVELOPMENT
 - Created 2 templates: api_keys/list.html, audit/list.html
 - Test suite: 105 tests passing (28 new tests for API keys, evaluation, audit)
 
+### Session 6 — DEVELOPMENT (Dashboard, Tests, Docker, README)
+- Enhanced Dashboard UI with comprehensive stats:
+  - Stats cards showing total projects, flags, environments, evaluations (30d)
+  - Per-project evaluation count badges on project cards
+  - Responsive mobile navigation with hamburger menu
+- Built Usage Analytics page (`/projects/{id}/usage`):
+  - Daily evaluations bar chart (last 14 days) with hover tooltips
+  - Top Flags by Usage rankings with progress bars
+  - Stats cards: total evaluations, active flags, avg daily
+  - Empty state when no evaluations exist
+  - Added "Usage" link to project navigation
+- Created Dockerfile and docker-compose.yml:
+  - Multi-stage Docker build (python:3.12-slim) for smaller images
+  - Non-root `flagdrop` user for security
+  - Health check, data volume, env var configuration
+  - docker-compose.yml with required secret key validation
+  - .dockerignore for clean build context
+  - Updated alembic/env.py to support FLAGDROP_DATABASE_URL env var
+- Wrote comprehensive README.md:
+  - Features overview, Quick Start, Docker Setup
+  - Full API documentation with curl examples and response schemas
+  - Configuration reference, project structure, development guide
+  - Plans/pricing table, tech stack, roadmap
+- Wrote 35 new tests across 4 new test files:
+  - test_dashboard.py (10 tests): stats display, empty/multi-project states, usage page auth/loading/ranking
+  - test_usage.py (8 tests): usage recording, incrementing, separate envs/flags, totals
+  - test_evaluation_advanced.py (11 tests): type-specific evaluation, enabled/updated values, multi-env keys, auth edge cases
+  - test_integration.py (7 tests): full signup-to-evaluate workflow, project isolation, toggle+evaluate, cascade delete, revoke enforcement
+- Test suite: 140 tests passing (35 new tests)
+- All backlog items complete — Phase changed from DEVELOPMENT → QA
+
+### Session 7 — QA (Quality Assurance & Polish)
+- Ran full test suite: 140 tests passing before any changes
+- **Comprehensive code review** of all services, models, API routes, and templates
+- **Security fixes** (4 issues):
+  - Authorization on flag toggle/update: `toggle_flag_value()` and `update_flag_value()` now validate `flag_id` ownership to prevent cross-project manipulation
+  - Cookie `secure` flag now dynamically set based on request scheme (`https` → `true`)
+  - Audit log pagination bounds checking: invalid/negative page params handled gracefully
+  - Flag key format validation: keys must be lowercase alphanumeric + underscores only
+- **Data integrity fixes** (2 issues):
+  - Added `UniqueConstraint("project_id", "key")` on Flag model to prevent duplicate flag keys per project
+  - Environment color validation: hex color format enforced with regex, falls back to default
+- **HTTP correctness** (1 issue):
+  - All POST form handlers now return `303 See Other` instead of `302 Found` per HTTP spec (prevents browsers from re-POSTing on refresh)
+- **UX bug fixes** (4 issues):
+  - Flag update with empty name now returns error message instead of silently redirecting
+  - Flag value validation errors now displayed to user (was silently redirecting)
+  - Error alert banner added to flag detail page template
+  - Signup Terms of Service text simplified (was referencing non-existent pages)
+- **Evaluation API fix** (1 issue):
+  - `evaluate_all_flags` now records usage for ALL flags, not just those with environment-specific values (was skipping flags using default values)
+- **UI polish** (5 improvements):
+  - API keys table wrapped in `overflow-x-auto` for mobile responsiveness
+  - Title attributes added to truncated flag names/keys for hover tooltips
+  - Aria labels added to mobile menu button and logout icon for accessibility
+  - Professional footer added to app layout (logo, copyright, version, API/status links)
+  - Body changed to flex column layout for proper footer positioning
+- **Test updates**:
+  - Updated 28 test assertions for 302→303 POST redirect change
+  - Added 8 new QA-specific tests (`test_qa.py`):
+    - Empty flag name update shows error
+    - Invalid flag value validation shows error message
+    - Toggle validates flag ownership
+    - Toggle rejects mismatched flag_value_id
+    - Audit log handles invalid page parameters
+    - Flag key format validation rejects invalid keys
+    - Evaluation records usage for all flags
+    - HTTP 303 on POST redirect verification
+- **Final test suite: 148 tests passing** (140 original + 8 new QA tests)
+- All QA checks pass — Phase changed from QA → DEPLOYMENT
+
 ## Known Issues
-- No virtualenv available (python3-venv not installed, no sudo access). Dependencies installed via `pip3 install --break-system-packages`. Consider Dockerfile for clean env.
+- No virtualenv available (python3-venv not installed, no sudo access). Dependencies installed via `pip3 install --break-system-packages`. Dockerfile provides clean env.
 
 ## Files Structure
 ```
 flag-drop/
 ├── CLAUDE.md                  # Project spec, backlog, progress
+├── README.md                  # Setup, usage, API docs, deploy
 ├── .gitignore                 # Python/IDE/DB ignores
+├── .dockerignore              # Docker build context exclusions
+├── Dockerfile                 # Multi-stage Docker build
+├── docker-compose.yml         # Docker Compose for deployment
 ├── pyproject.toml             # Project config, dependencies, tool settings
 ├── alembic.ini                # Alembic configuration
 ├── alembic/                   # Database migrations
-│   ├── env.py
+│   ├── env.py                 # Supports FLAGDROP_DATABASE_URL env var
 │   └── versions/
 ├── src/
 │   └── app/
@@ -170,7 +245,7 @@ flag-drop/
 │       │   ├── api_keys.py    # API key management routes
 │       │   ├── audit.py       # Audit log routes
 │       │   ├── auth.py        # Auth routes (login, signup, logout)
-│       │   ├── dashboard.py   # Dashboard route
+│       │   ├── dashboard.py   # Dashboard + usage analytics routes
 │       │   ├── deps.py        # Auth dependency injectors
 │       │   ├── environments.py # Environments CRUD routes
 │       │   ├── evaluation.py  # Flag evaluation REST API
@@ -201,13 +276,14 @@ flag-drop/
 │       │   └── usage.py       # Usage tracking service
 │       └── templates/
 │           ├── layouts/
-│           │   ├── app.html   # Authenticated app layout with nav
+│           │   ├── app.html   # App layout with nav + mobile menu
 │           │   └── base.html  # Base HTML with Tailwind/HTMX
 │           ├── auth/
 │           │   ├── login.html
 │           │   └── signup.html
 │           ├── dashboard/
-│           │   └── index.html
+│           │   ├── index.html # Dashboard with stats cards
+│           │   └── usage.html # Usage analytics with charts
 │           ├── api_keys/
 │           │   └── list.html
 │           ├── audit/
@@ -223,14 +299,17 @@ flag-drop/
 │               └── settings.html
 └── tests/
     ├── __init__.py
-    ├── conftest.py            # Test fixtures (async client, DB setup)
-    ├── test_auth.py           # Auth tests (30 tests)
-    ├── test_environments.py   # Environment tests (6 tests)
-    ├── test_flags.py          # Flag tests (22 tests)
-    ├── test_api_keys.py       # API key tests (9 tests)
-    ├── test_audit.py          # Audit log tests (9 tests)
-    ├── test_evaluation.py     # Flag evaluation API tests (10 tests)
-    ├── test_health.py         # Health check tests (2 tests)
-    ├── test_models.py         # Model tests (8 tests)
-    └── test_projects.py       # Project tests (11 tests)
+    ├── conftest.py                # Test fixtures (async client, DB)
+    ├── test_auth.py               # Auth tests (30 tests)
+    ├── test_dashboard.py          # Dashboard + usage page tests (10 tests)
+    ├── test_environments.py       # Environment tests (6 tests)
+    ├── test_evaluation.py         # Flag evaluation API tests (10 tests)
+    ├── test_evaluation_advanced.py # Advanced eval tests (11 tests)
+    ├── test_flags.py              # Flag tests (22 tests)
+    ├── test_health.py             # Health check tests (2 tests)
+    ├── test_integration.py        # End-to-end integration tests (7 tests)
+    ├── test_models.py             # Model tests (8 tests)
+    ├── test_projects.py           # Project tests (11 tests)
+    ├── test_qa.py                 # QA session bug fix tests (8 tests)
+    └── test_usage.py              # Usage tracking service tests (8 tests)
 ```

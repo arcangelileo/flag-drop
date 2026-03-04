@@ -48,14 +48,14 @@ async def login(
         )
 
     token = create_access_token(user.id, user.email)
-    response = RedirectResponse(url="/dashboard", status_code=302)
+    response = RedirectResponse(url="/dashboard", status_code=303)
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
         samesite="lax",
         max_age=60 * 60 * 24,
-        secure=False,
+        secure=request.url.scheme == "https",
     )
     return response
 
@@ -107,14 +107,14 @@ async def signup(
 
     user = await create_user(db, email, password, full_name)
     token = create_access_token(user.id, user.email)
-    response = RedirectResponse(url="/dashboard", status_code=302)
+    response = RedirectResponse(url="/dashboard", status_code=303)
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
         samesite="lax",
         max_age=60 * 60 * 24,
-        secure=False,
+        secure=request.url.scheme == "https",
     )
     return response
 

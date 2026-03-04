@@ -54,7 +54,7 @@ async def create_project_handler(
         )
 
     project = await create_project(db, name, user.id, description or None)
-    return RedirectResponse(url=f"/projects/{project.id}/flags", status_code=302)
+    return RedirectResponse(url=f"/projects/{project.id}/flags", status_code=303)
 
 
 @router.get("/{project_id}/settings", response_class=HTMLResponse)
@@ -115,7 +115,7 @@ async def update_project_handler(
     await update_project(db, project, name=name, description=description or None)
     return RedirectResponse(
         url=f"/projects/{project_id}/settings?success=Project+updated+successfully",
-        status_code=302,
+        status_code=303,
     )
 
 
@@ -131,4 +131,4 @@ async def delete_project_handler(
         return RedirectResponse(url="/dashboard", status_code=302)
 
     await delete_project(db, project)
-    return RedirectResponse(url="/dashboard", status_code=302)
+    return RedirectResponse(url="/dashboard", status_code=303)

@@ -116,7 +116,7 @@ async def create_api_key_handler(
     from urllib.parse import quote
     return RedirectResponse(
         url=f"/projects/{project_id}/api-keys?created_key={quote(raw_key)}&created_name={quote(name)}",
-        status_code=302,
+        status_code=303,
     )
 
 
@@ -150,7 +150,7 @@ async def revoke_api_key_handler(
 
     return RedirectResponse(
         url=f"/projects/{project_id}/api-keys?success=API+key+revoked",
-        status_code=302,
+        status_code=303,
     )
 
 
@@ -184,5 +184,5 @@ async def delete_api_key_handler(
 
     return RedirectResponse(
         url=f"/projects/{project_id}/api-keys?success=API+key+deleted",
-        status_code=302,
+        status_code=303,
     )

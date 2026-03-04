@@ -34,7 +34,7 @@ async def test_create_custom_environment(authenticated_client, db):
         "name": "QA",
         "color": "#8B5CF6",
     }, follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     assert "success" in response.headers["location"]
 
     # Verify it appears in the list
@@ -66,7 +66,7 @@ async def test_delete_environment(authenticated_client, db):
         f"/projects/{project.id}/environments/{env_to_delete.id}/delete",
         follow_redirects=False,
     )
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
 
     # Verify it's gone
     envs_after = await get_environments_for_project(db, project.id)

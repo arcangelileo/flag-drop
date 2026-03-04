@@ -19,7 +19,7 @@ async def test_create_project(authenticated_client):
         "name": "My Test App",
         "description": "A test application",
     }, follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     assert "/flags" in response.headers["location"]
 
 
@@ -39,7 +39,7 @@ async def test_create_project_auto_creates_environments(authenticated_client, db
     response = await client.post("/projects/new", data={
         "name": "Env Test App",
     }, follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
 
     # Check that environments were created
     from sqlalchemy import select
@@ -83,7 +83,7 @@ async def test_update_project(authenticated_client, db):
         "name": "New Name",
         "description": "New description",
     }, follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     assert "success" in response.headers["location"]
 
 
@@ -110,7 +110,7 @@ async def test_delete_project(authenticated_client, db):
     await db.commit()
 
     response = await client.post(f"/projects/{project.id}/delete", follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     assert response.headers["location"] == "/dashboard"
 
     # Verify deleted

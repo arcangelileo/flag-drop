@@ -87,9 +87,8 @@ async def evaluate_all_flags(
             "type": flag.flag_type,
         }
 
-        # Record usage
-        if flag_value:
-            await record_evaluation(db, flag.id, api_key.environment_id)
+        # Record usage for all flags
+        await record_evaluation(db, flag.id, api_key.environment_id)
 
     return {
         "flags": response_flags,

@@ -135,7 +135,7 @@ async def test_signup_success(client):
         "confirm_password": "strongpass123",
         "full_name": "New User",
     }, follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     assert response.headers["location"] == "/dashboard"
     assert "access_token" in response.cookies
 
@@ -212,7 +212,7 @@ async def test_login_success(client):
         "email": "login@example.com",
         "password": "testpass123",
     }, follow_redirects=False)
-    assert response.status_code == 302
+    assert response.status_code in (302, 303)
     assert response.headers["location"] == "/dashboard"
     assert "access_token" in response.cookies
 

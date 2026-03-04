@@ -1,3 +1,4 @@
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
@@ -20,6 +21,13 @@ config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# Allow overriding the database URL via environment variable.
+# Converts the async aiosqlite URL to a sync sqlite URL for Alembic.
+db_url_env = os.environ.get("FLAGDROP_DATABASE_URL")
+if db_url_env:
+    sync_url = db_url_env.replace("sqlite+aiosqlite", "sqlite")
+    config.set_main_option("sqlalchemy.url", sync_url)
 
 target_metadata = Base.metadata
 

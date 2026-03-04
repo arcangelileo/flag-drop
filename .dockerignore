@@ -1,0 +1,59 @@
+# Version control
+.git
+.gitignore
+
+# Python artifacts
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+*.egg-info
+*.egg
+dist/
+build/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.*
+
+# Database files (mounted via volume, not baked into image)
+*.db
+*.sqlite
+*.sqlite3
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+tests/
+
+# Documentation
+CLAUDE.md
+README.md
+LICENSE
+
+# Docker
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+*.tar.gz
+*.md
