@@ -35,6 +35,11 @@ LABEL maintainer="FlagDrop <hello@flagdrop.dev>"
 LABEL description="FlagDrop - Feature flag management platform"
 LABEL version="0.1.0"
 
+# Install tini for proper PID 1 signal handling (zombie reaping, SIGTERM forwarding)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends tini curl && \
+    rm -rf /var/lib/apt/lists/*
+
 # Prevent Python from writing .pyc files and enable unbuffered output
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -69,12 +74,19 @@ USER flagdrop
 ENV FLAGDROP_HOST="0.0.0.0" \
     FLAGDROP_PORT="8000" \
     FLAGDROP_DATABASE_URL="sqlite+aiosqlite:///./data/flagdrop.db" \
-    FLAGDROP_DEBUG="false"
+    FLAGDROP_DEBUG="false" \
+    PYTHONPATH="/app/src"
 
-# Health check
+# Signal for graceful shutdown
+STOPSIGNAL SIGTERM
+
+# Health check using curl for reliability
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Use tini as init process for proper signal handling
+ENTRYPOINT ["tini", "--"]
 
 # Run Alembic migrations then start the server.
 # Alembic's env.py reads FLAGDROP_DATABASE_URL and converts it to a sync URL.
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host ${FLAGDROP_HOST} --port ${FLAGDROP_PORT}"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host ${FLAGDROP_HOST} --port ${FLAGDROP_PORT} --timeout-graceful-shutdown 30"]

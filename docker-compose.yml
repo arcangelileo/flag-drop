@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: flagdrop:latest
     container_name: flagdrop
     restart: unless-stopped
     ports:
@@ -16,11 +17,17 @@ services:
       - FLAGDROP_PORT=8000
       - FLAGDROP_DEBUG=${FLAGDROP_DEBUG:-false}
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   flagdrop-data:

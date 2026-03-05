@@ -1,11 +1,10 @@
 """Advanced tests for flag evaluation API covering edge cases and type handling."""
-import json
 
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.auth import create_access_token, create_user
+from app.services.auth import create_user
 from app.services.projects import create_project
 from app.services.flags import create_flag, get_flag_by_id, toggle_flag_value, update_flag_value
 from app.services.api_keys import create_api_key

@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.api_key import APIKey
-from app.models.environment import Environment
 from app.services.auth import generate_api_key, hash_api_key
 
 

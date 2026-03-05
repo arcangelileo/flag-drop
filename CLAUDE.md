@@ -1,6 +1,6 @@
 # FlagDrop
 
-Phase: DEPLOYMENT
+Phase: COMPLETE
 
 ## Project Spec
 - **Repo**: https://github.com/arcangelileo/flag-drop
@@ -217,6 +217,34 @@ Phase: DEPLOYMENT
 - **Final test suite: 148 tests passing** (140 original + 8 new QA tests)
 - All QA checks pass — Phase changed from QA → DEPLOYMENT
 
+### Session 8 — DEPLOYMENT (Final Polish & Ship)
+- Reviewed and updated Dockerfile:
+  - Added `PYTHONPATH=/app/src` for reliable module resolution
+  - Added `STOPSIGNAL SIGTERM` for explicit graceful shutdown signaling
+  - Added `--timeout-graceful-shutdown 30` to uvicorn CMD for clean connection draining
+- Updated docker-compose.yml:
+  - Added `image: flagdrop:latest` tag
+  - Added `stop_grace_period: 30s` for graceful container shutdown
+  - Added `logging` config with `json-file` driver, 10MB max-size, 3 file rotation
+- Updated .env.example:
+  - Added `FLAGDROP_ACCESS_TOKEN_EXPIRE_MINUTES` and `FLAGDROP_JWT_ALGORITHM` as optional commented variables
+- Rewrote README.md — comprehensive production documentation:
+  - Docker one-liner quick start with inline secret key generation
+  - Local development setup with virtualenv
+  - Full configuration reference table with all env vars
+  - Complete API documentation with integration code example (Python)
+  - Architecture diagram and key design decisions
+  - Database models reference table
+  - Full test suite breakdown (148 tests across 12 files)
+  - Docker deployment guide with production checklist
+  - Contributing guidelines
+  - Updated roadmap with completed items checked off
+- Code cleanup:
+  - Ran `ruff check --fix --unsafe-fixes` — fixed 17 lint issues (unused imports, unused variables)
+  - All source and test files now pass `ruff check` cleanly
+- **Final test suite: 148 tests passing** after all changes
+- Phase changed from DEPLOYMENT → COMPLETE
+
 ## Known Issues
 - No virtualenv available (python3-venv not installed, no sudo access). Dependencies installed via `pip3 install --break-system-packages`. Dockerfile provides clean env.
 
@@ -225,6 +253,7 @@ Phase: DEPLOYMENT
 flag-drop/
 ├── CLAUDE.md                  # Project spec, backlog, progress
 ├── README.md                  # Setup, usage, API docs, deploy
+├── .env.example               # Environment variable reference
 ├── .gitignore                 # Python/IDE/DB ignores
 ├── .dockerignore              # Docker build context exclusions
 ├── Dockerfile                 # Multi-stage Docker build
@@ -300,6 +329,8 @@ flag-drop/
 └── tests/
     ├── __init__.py
     ├── conftest.py                # Test fixtures (async client, DB)
+    ├── test_api_keys.py           # API key management tests (9 tests)
+    ├── test_audit.py              # Audit log tests (9 tests)
     ├── test_auth.py               # Auth tests (30 tests)
     ├── test_dashboard.py          # Dashboard + usage page tests (10 tests)
     ├── test_environments.py       # Environment tests (6 tests)
@@ -311,5 +342,5 @@ flag-drop/
     ├── test_models.py             # Model tests (8 tests)
     ├── test_projects.py           # Project tests (11 tests)
     ├── test_qa.py                 # QA session bug fix tests (8 tests)
-    └── test_usage.py              # Usage tracking service tests (8 tests)
+    └── test_usage.py              # Usage tracking service tests (7 tests)
 ```

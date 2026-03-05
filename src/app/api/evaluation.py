@@ -8,7 +8,6 @@ from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models.api_key import APIKey
 from app.models.flag import Flag
-from app.models.flag_value import FlagValue
 from app.services.api_keys import get_api_key_by_raw_key, update_last_used
 from app.services.usage import record_evaluation
 

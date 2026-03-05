@@ -10,7 +10,6 @@ from app.services.projects import (
     create_project,
     delete_project,
     get_project_by_id,
-    get_projects_for_user,
     update_project,
 )
 

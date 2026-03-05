@@ -13,11 +13,10 @@ async def _setup_project_with_flags(db, user_id):
 
     # Create flags
     flag1 = await create_flag(db, project.id, "Dark Mode", key="dark_mode", flag_type="boolean")
-    flag2 = await create_flag(db, project.id, "Banner Text", key="banner_text", flag_type="string", default_value='"Hello"')
-    flag3 = await create_flag(db, project.id, "Max Items", key="max_items", flag_type="number", default_value="10")
+    await create_flag(db, project.id, "Banner Text", key="banner_text", flag_type="string", default_value='"Hello"')
+    await create_flag(db, project.id, "Max Items", key="max_items", flag_type="number", default_value="10")
 
     # Toggle dark_mode ON for first environment
-    from app.services.flags import toggle_flag_value, update_flag_value
     from sqlalchemy import select
     from app.models.flag_value import FlagValue
 

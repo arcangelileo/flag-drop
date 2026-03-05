@@ -1,15 +1,13 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import get_current_user, get_current_user_optional
 from app.database import get_db
-from app.models.flag import Flag
 from app.models.project import Project
-from app.models.usage_record import UsageRecord
 from app.models.user import User
 from app.services.projects import get_project_by_id
 from app.services.usage import get_usage_for_project, get_total_evaluations_for_project
@@ -83,7 +81,7 @@ async def project_usage_page(
 
     daily_totals = defaultdict(int)
     flag_totals = defaultdict(int)
-    env_totals = defaultdict(int)
+    defaultdict(int)
 
     for record in usage_records:
         daily_totals[record.record_date.isoformat()] += record.evaluation_count

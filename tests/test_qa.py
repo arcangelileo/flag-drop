@@ -121,7 +121,7 @@ async def test_create_flag_key_validation(client: AsyncClient, db: AsyncSession)
 
 async def test_evaluation_records_usage_for_all_flags(client: AsyncClient, db: AsyncSession):
     """Bug fix: usage should be recorded for all flags, not just those with env values."""
-    from app.services.auth import create_access_token, create_user
+    from app.services.auth import create_user
     from app.services.projects import create_project
     from app.services.flags import create_flag
     from app.services.api_keys import create_api_key
@@ -134,7 +134,7 @@ async def test_evaluation_records_usage_for_all_flags(client: AsyncClient, db: A
     project = await create_project(db, "Eval Test", user.id)
     await db.commit()
 
-    flag = await create_flag(db, project.id, "Eval Flag", key="eval_flag")
+    await create_flag(db, project.id, "Eval Flag", key="eval_flag")
     await db.commit()
 
     envs = await get_environments_for_project(db, project.id)

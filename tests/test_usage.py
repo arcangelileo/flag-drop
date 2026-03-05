@@ -1,5 +1,4 @@
 """Tests for the usage tracking service."""
-import pytest
 from datetime import date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
